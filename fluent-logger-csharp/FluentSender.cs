@@ -98,6 +98,7 @@ namespace Fluent
 
         private MessagePackObject GetTypedMessagePackObject(Type type, object obj)
         {
+            
             if (type == typeof(bool)) return new MessagePackObject((bool)obj);
             if (type == typeof(byte)) return new MessagePackObject((byte)obj);
             if (type == typeof(byte[])) return new MessagePackObject((byte[])obj);
@@ -162,8 +163,6 @@ namespace Fluent
                 }
             }
         }
-        private DateTime _epoc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         private byte[] MakePacket(string label, DateTime timestamp, MessagePackObject data)
         {
             string tag;
@@ -178,7 +177,7 @@ namespace Fluent
 
             var xs = new List<MessagePackObject>();
             xs.Add(tag);
-            xs.Add((timestamp - _epoc).TotalSeconds);
+            xs.Add(MessagePackConvert.FromDateTime(timestamp));
             xs.Add(data);
             var x = new MessagePackObject(xs);
 

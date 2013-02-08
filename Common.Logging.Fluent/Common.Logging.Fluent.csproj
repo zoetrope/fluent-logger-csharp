@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="FluentLogger.cs" />
     <Compile Include="FluentLoggerFactoryAdapter.cs" />
+    <Compile Include="ImplicitQueryString.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

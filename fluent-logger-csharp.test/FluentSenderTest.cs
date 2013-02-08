@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using Codeplex.Web;
+using System.Collections.Specialized;
 
 namespace Fluent.test
 {
@@ -15,6 +17,16 @@ namespace Fluent.test
                 sender.EmitAsync("hoge", new { message = "hoge" }).Wait();
             }
             
+        }
+
+        [TestMethod]
+        public void TestMethod2()
+        {
+            var nvlist = new NameValueCollection();
+
+            string x = (string)nvlist.ParseValue("x") ?? "hoge";
+
+            x.Is("hoge");
         }
     }
 }

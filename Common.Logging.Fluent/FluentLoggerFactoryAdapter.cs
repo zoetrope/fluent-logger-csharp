@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Codeplex.Web;
 
 namespace Common.Logging.Fluent
 {
@@ -22,14 +23,14 @@ namespace Common.Logging.Fluent
             : base(properties)
         {
 
-            var tag = properties["tag"];
-            var hostname = properties["hostname"];
-            var port = int.Parse(properties["port"]);
-            var bufmax = int.Parse(properties["bufmax"]);
-            var timeout = int.Parse(properties["timeout"]);
-            var verbose = bool.Parse(properties["verbose"]);
+            string tag = (string)properties.ParseValue("tag") ?? "Fluent";
+            string hostname = (string)properties.ParseValue("hostname") ?? "localhost";
+            int port = properties.ParseValueOrDefault("port", 22434);
+            int bufmax = properties.ParseValueOrDefault("bufmax", 1024 * 1024);
+            int timeout = properties.ParseValueOrDefault("timeout", 3000);
+            bool verbose = properties.ParseValueOrDefault("verbose", false);
 
-            _sender = FluentSender.CreateSync(tag, hostname, port, bufmax,timeout, verbose).Result;
+            _sender = FluentSender.CreateSync(tag, hostname, port, bufmax, timeout, verbose).Result;
 
         }
 
