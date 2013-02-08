@@ -2,6 +2,7 @@
 using MsgPack.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Fluent
 {
-    public class FluentSender :IDisposable
+    public class FluentSender : IDisposable
     {
         private string _tag;
         private string _host;
@@ -20,7 +21,6 @@ namespace Fluent
         private int _bufmax;
         private int _timeout;
         private bool _verbose;
-        private MessagePackSerializer<Object> _serializer;
         private readonly object _lockObj = new object();
         private byte[] _pendings;
         private TcpClient _client;
@@ -32,15 +32,15 @@ namespace Fluent
         public static async Task<FluentSender> CreateSync(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false)
         {
             var sender = new FluentSender();
-            
+
             await sender.InitializeAsync(tag, host, port, bufmax, timeout, verbose);
 
             return sender;
         }
 
-        private async Task InitializeAsync(string tag, string host, int port , int bufmax , int timeout , bool verbose)
+        private async Task InitializeAsync(string tag, string host, int port, int bufmax, int timeout, bool verbose)
         {
-            
+
             _tag = tag;
             _host = host;
             _port = port;
@@ -86,19 +86,14 @@ namespace Fluent
 
         public async Task EmitWithTimeAsync(string label, DateTime timestamp, object obj)
         {
-            var dict = obj.GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .ToDictionary(pi => new MessagePackObject(pi.Name), pi => GetTypedMessagePackObject(pi.PropertyType, pi.GetValue(obj, null)));
-
-            var mpoDict = new MessagePackObjectDictionary(dict);
-            var mpobj = new MessagePackObject(mpoDict);
-            var bytes = MakePacket(label, timestamp, mpobj);
+            var mpObj = CreateTypedMessagePackObject(obj.GetType(), obj);
+            var bytes = MakePacket(label, timestamp, mpObj);
             await SendAsync(bytes);
         }
 
-        private MessagePackObject GetTypedMessagePackObject(Type type, object obj)
+        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj)
         {
-            
+
             if (type == typeof(bool)) return new MessagePackObject((bool)obj);
             if (type == typeof(byte)) return new MessagePackObject((byte)obj);
             if (type == typeof(byte[])) return new MessagePackObject((byte[])obj);
@@ -112,12 +107,32 @@ namespace Fluent
             if (type == typeof(uint)) return new MessagePackObject((uint)obj);
             if (type == typeof(ulong)) return new MessagePackObject((ulong)obj);
             if (type == typeof(ushort)) return new MessagePackObject((ushort)obj);
-            else throw new ArgumentException("invalid type", "type");
+
+            if (type.IsArray)
+            {
+                return new MessagePackObject((obj as object[]).Select(x => CreateTypedMessagePackObject(type.GetElementType(), x)).ToList());
+            }
+
+            if (obj is ExpandoObject || obj is Dictionary<string, object>)
+            {
+                var tmp = obj as Dictionary<string, object>;
+                var dict = tmp.ToDictionary(x => new MessagePackObject(x.Key), x => CreateTypedMessagePackObject(x.GetType(), x.Value));
+                return new MessagePackObject(new MessagePackObjectDictionary(dict));
+            }
+            else
+            {
+                var dict = obj.GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .ToDictionary(pi => new MessagePackObject(pi.Name), pi => CreateTypedMessagePackObject(pi.PropertyType, pi.GetValue(obj, null)));
+                return new MessagePackObject(new MessagePackObjectDictionary(dict));
+            }
+
+            throw new ArgumentException("invalid type", "type");
         }
 
         private async Task SendAsync(byte[] bytes)
         {
-            while (!Monitor.TryEnter(_lockObj))await Task.Yield();
+            while (!Monitor.TryEnter(_lockObj)) await Task.Yield();
 
             try
             {
@@ -129,7 +144,7 @@ namespace Fluent
             }
         }
 
-        
+
         private async Task SendInternalAsync(byte[] bytes)
         {
             if (_pendings != null)

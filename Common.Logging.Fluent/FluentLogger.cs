@@ -2,6 +2,7 @@
 using Fluent;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,10 +23,29 @@ namespace Common.Logging.Fluent
 
         protected override void WriteInternal(LogLevel targetLevel, object message, Exception e)
         {
-            var sb = new StringBuilder();
-            FormatOutput(sb, targetLevel, message, e);
+            dynamic record = CreateLogRecord(targetLevel, message, e);
+            _sender.EmitAsync(_typeName, record).Wait();
+        }
 
-            _sender.EmitAsync(_typeName, sb.ToString()).Wait();
+
+        private dynamic CreateLogRecord(LogLevel targetLevel, object message, Exception e)
+        {
+            dynamic record = new ExpandoObject();
+            
+
+            if (ShowLevel)
+            {
+                record.Level = targetLevel.ToString().ToUpper();
+            }
+
+            record.Message = message;
+
+            if (e != null)
+            {
+                record.Exception = e.ToString();
+            }
+
+            return record;
         }
     }
 }

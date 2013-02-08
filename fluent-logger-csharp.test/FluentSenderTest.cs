@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Codeplex.Web;
 using System.Collections.Specialized;
+using Common.Logging.Fluent;
+using Common.Logging;
 
 namespace Fluent.test
 {
@@ -27,6 +29,18 @@ namespace Fluent.test
             string x = (string)nvlist.ParseValue("x") ?? "hoge";
 
             x.Is("hoge");
+        }
+
+
+        [TestMethod]
+        public void TestMethod3()
+        {
+            var properties = new NameValueCollection();
+            LogManager.Adapter = new FluentLoggerFactoryAdapter(properties);
+
+            var logger = LogManager.GetCurrentClassLogger();
+            logger.Debug("test");
+            
         }
     }
 }
