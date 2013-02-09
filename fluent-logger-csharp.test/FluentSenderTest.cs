@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 using Common.Logging.Fluent;
 using Common.Logging;
 
-namespace Fluent.test
+namespace Fluent.Test
 {
     [TestClass]
     public class FluentSenderTest

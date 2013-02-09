@@ -1,13 +1,5 @@
-﻿using MsgPack;
-using MsgPack.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
-using System.Linq;
+﻿using System;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,10 +16,7 @@ namespace Fluent
         private readonly object _lockObj = new object();
         private byte[] _pendings;
         private TcpClient _client;
-
-        private FluentSender()
-        {
-        }
+        private MessagePacker _packer;
 
         public static async Task<FluentSender> CreateSync(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false)
         {
@@ -37,16 +26,19 @@ namespace Fluent
 
             return sender;
         }
+        private FluentSender()
+        {
+        }
+
 
         private async Task InitializeAsync(string tag, string host, int port, int bufmax, int timeout, bool verbose)
         {
-
-            _tag = tag;
             _host = host;
             _port = port;
             _bufmax = bufmax;
             _timeout = timeout;
             _verbose = verbose;
+            _packer = new MessagePacker(tag);
 
             try
             {
@@ -56,6 +48,11 @@ namespace Fluent
             {
                 Close();
             }
+        }
+
+        public void Dispose()
+        {
+            Close();
         }
 
         private void Close()
@@ -86,49 +83,10 @@ namespace Fluent
 
         public async Task EmitWithTimeAsync(string label, DateTime timestamp, object obj)
         {
-            var mpObj = CreateTypedMessagePackObject(obj.GetType(), obj);
-            var bytes = MakePacket(label, timestamp, mpObj);
+            var bytes = _packer.MakePacket(label, timestamp, obj);
             await SendAsync(bytes);
         }
 
-        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj)
-        {
-
-            if (type == typeof(bool)) return new MessagePackObject((bool)obj);
-            if (type == typeof(byte)) return new MessagePackObject((byte)obj);
-            if (type == typeof(byte[])) return new MessagePackObject((byte[])obj);
-            if (type == typeof(double)) return new MessagePackObject((double)obj);
-            if (type == typeof(float)) return new MessagePackObject((float)obj);
-            if (type == typeof(int)) return new MessagePackObject((int)obj);
-            if (type == typeof(long)) return new MessagePackObject((long)obj);
-            if (type == typeof(sbyte)) return new MessagePackObject((sbyte)obj);
-            if (type == typeof(short)) return new MessagePackObject((short)obj);
-            if (type == typeof(string)) return new MessagePackObject((string)obj);
-            if (type == typeof(uint)) return new MessagePackObject((uint)obj);
-            if (type == typeof(ulong)) return new MessagePackObject((ulong)obj);
-            if (type == typeof(ushort)) return new MessagePackObject((ushort)obj);
-
-            if (type.IsArray)
-            {
-                return new MessagePackObject((obj as object[]).Select(x => CreateTypedMessagePackObject(type.GetElementType(), x)).ToList());
-            }
-
-            if (obj is ExpandoObject || obj is Dictionary<string, object>)
-            {
-                var tmp = obj as Dictionary<string, object>;
-                var dict = tmp.ToDictionary(x => new MessagePackObject(x.Key), x => CreateTypedMessagePackObject(x.GetType(), x.Value));
-                return new MessagePackObject(new MessagePackObjectDictionary(dict));
-            }
-            else
-            {
-                var dict = obj.GetType()
-                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .ToDictionary(pi => new MessagePackObject(pi.Name), pi => CreateTypedMessagePackObject(pi.PropertyType, pi.GetValue(obj, null)));
-                return new MessagePackObject(new MessagePackObjectDictionary(dict));
-            }
-
-            throw new ArgumentException("invalid type", "type");
-        }
 
         private async Task SendAsync(byte[] bytes)
         {
@@ -177,41 +135,6 @@ namespace Fluent
                     _pendings = bytes;
                 }
             }
-        }
-        private byte[] MakePacket(string label, DateTime timestamp, MessagePackObject data)
-        {
-            string tag;
-            if (!string.IsNullOrEmpty(label))
-            {
-                tag = _tag + "." + label;
-            }
-            else
-            {
-                tag = _tag;
-            }
-
-            var xs = new List<MessagePackObject>();
-            xs.Add(tag);
-            xs.Add(MessagePackConvert.FromDateTime(timestamp));
-            xs.Add(data);
-            var x = new MessagePackObject(xs);
-
-            if (_verbose)
-            {
-                Console.WriteLine(tag);
-                Console.WriteLine(timestamp);
-                Console.WriteLine(data.ToString());
-            }
-
-            var ms = new MemoryStream();
-            var packer = Packer.Create(ms);
-            packer.Pack(x);
-            return ms.ToArray();
-        }
-
-        public void Dispose()
-        {
-            Close();
         }
     }
 }

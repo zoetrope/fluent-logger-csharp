@@ -7,7 +7,7 @@
     <ProjectGuid>{A73587E2-E282-4B5F-95C6-7D1E7DDFD2D8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>fluent_logger_csharp</RootNamespace>
+    <RootNamespace>Fluent</RootNamespace>
     <AssemblyName>fluent-logger-csharp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FluentSender.cs" />
+    <Compile Include="MessagePacker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
