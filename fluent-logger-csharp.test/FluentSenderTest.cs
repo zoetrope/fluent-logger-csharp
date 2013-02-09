@@ -5,6 +5,7 @@ using Codeplex.Web;
 using System.Collections.Specialized;
 using Common.Logging.Fluent;
 using Common.Logging;
+using MsgPack;
 
 namespace Fluent.Test
 {
@@ -12,35 +13,20 @@ namespace Fluent.Test
     public class FluentSenderTest
     {
         [TestMethod]
-        public void TestMethod1()
+        public void SendMessage()
         {
+            var server = new DummyServer();
+            var task = server.Run(24224);
+            var date = MessagePackConvert.ToDateTime(1360370224238);
+
             using (var sender = FluentSender.CreateSync("app").Result)
             {
-                sender.EmitAsync("hoge", new { message = "hoge" }).Wait();
+                sender.EmitWithTimeAsync("hoge", date, new { message = "hoge" });
             }
-            
+            var ret = task.Result;
+
+            Utils.Unpack(ret).Is(@"[ ""app.hoge"", 1360370224238, { ""message"" : ""hoge"" } ]");
         }
 
-        [TestMethod]
-        public void TestMethod2()
-        {
-            var nvlist = new NameValueCollection();
-
-            string x = (string)nvlist.ParseValue("x") ?? "hoge";
-
-            x.Is("hoge");
-        }
-
-
-        [TestMethod]
-        public void TestMethod3()
-        {
-            var properties = new NameValueCollection();
-            LogManager.Adapter = new FluentLoggerFactoryAdapter(properties);
-
-            var logger = LogManager.GetCurrentClassLogger();
-            logger.Debug("test");
-            
-        }
     }
 }

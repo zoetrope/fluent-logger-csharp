@@ -66,6 +66,7 @@
     <Compile Include="FluentSenderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MessagePackerTest.cs" />
+    <Compile Include="FluentLoggerTest.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

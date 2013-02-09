@@ -24,7 +24,7 @@ namespace Fluent
             MaxNestCount = maxNestCount;
         }
 
-        public byte[] MakePacket(string label, DateTime timestamp, object obj)
+        public byte[] MakePacket(string label, DateTime timestamp, params object[] records)
         {
             string tag;
             if (!string.IsNullOrEmpty(label))
@@ -38,9 +38,12 @@ namespace Fluent
 
             var xs = new List<MessagePackObject>();
             xs.Add(tag);
-            xs.Add(MessagePackConvert.FromDateTime(timestamp));
-            _nestCount = 0;
-            xs.Add(CreateTypedMessagePackObject(obj.GetType(), obj));
+            foreach (var record in records)
+            {
+                xs.Add(MessagePackConvert.FromDateTime(timestamp));
+                _nestCount = 0;
+                xs.Add(CreateTypedMessagePackObject(record.GetType(), record));
+            }
             var x = new MessagePackObject(xs);
 
             var ms = new MemoryStream();

@@ -25,7 +25,7 @@ namespace Common.Logging.Fluent
 
             string tag = (string)properties.ParseValue("tag") ?? "Fluent";
             string hostname = (string)properties.ParseValue("hostname") ?? "localhost";
-            int port = properties.ParseValueOrDefault("port", 22434);
+            int port = properties.ParseValueOrDefault("port", 24224);
             int bufmax = properties.ParseValueOrDefault("bufmax", 1024 * 1024);
             int timeout = properties.ParseValueOrDefault("timeout", 3000);
             bool verbose = properties.ParseValueOrDefault("verbose", false);

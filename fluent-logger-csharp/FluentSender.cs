@@ -13,7 +13,7 @@ namespace Fluent
         private int _bufmax;
         private int _timeout;
         private bool _verbose;
-        private readonly object _lockObj = new object();
+        private readonly SemaphoreSlim _lockObj = new SemaphoreSlim(1);
         private byte[] _pendings;
         private TcpClient _client;
         private MessagePacker _packer;
@@ -75,13 +75,13 @@ namespace Fluent
             }
         }
 
-        public async Task EmitAsync(string label, object obj)
+        public async Task EmitAsync(string label, params object[] obj)
         {
             var curTime = DateTime.UtcNow;
             await EmitWithTimeAsync(label, curTime, obj);
         }
 
-        public async Task EmitWithTimeAsync(string label, DateTime timestamp, object obj)
+        public async Task EmitWithTimeAsync(string label, DateTime timestamp, params object[] obj)
         {
             var bytes = _packer.MakePacket(label, timestamp, obj);
             await SendAsync(bytes);
@@ -90,7 +90,7 @@ namespace Fluent
 
         private async Task SendAsync(byte[] bytes)
         {
-            while (!Monitor.TryEnter(_lockObj)) await Task.Yield();
+            await _lockObj.WaitAsync();
 
             try
             {
@@ -98,7 +98,7 @@ namespace Fluent
             }
             finally
             {
-                Monitor.Exit(_lockObj);
+                _lockObj.Release();
             }
         }
 
