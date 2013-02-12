@@ -77,7 +77,7 @@ namespace Fluent
 
         public async Task EmitAsync(string label, params object[] obj)
         {
-            var curTime = DateTime.UtcNow;
+            var curTime = DateTime.Now;
             await EmitWithTimeAsync(label, curTime, obj);
         }
 

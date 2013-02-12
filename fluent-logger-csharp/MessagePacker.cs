@@ -24,6 +24,8 @@ namespace Fluent
             MaxNestCount = maxNestCount;
         }
 
+        private static readonly DateTime _epoc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         public byte[] MakePacket(string label, DateTime timestamp, params object[] records)
         {
             string tag;
@@ -40,7 +42,7 @@ namespace Fluent
             xs.Add(tag);
             foreach (var record in records)
             {
-                xs.Add(MessagePackConvert.FromDateTime(timestamp));
+                xs.Add(timestamp.ToUniversalTime().Subtract(_epoc).TotalSeconds);
                 _nestCount = 0;
                 xs.Add(CreateTypedMessagePackObject(record.GetType(), record));
             }
