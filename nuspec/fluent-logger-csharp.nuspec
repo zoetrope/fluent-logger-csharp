@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>fluent-logger-csharp</id>
+        <version>0.1.0</version>
+        <title />
+        <authors>zoetrope</authors>
+        <owners />
+        <licenseUrl>https://github.com/zoetrope/fluent-logger-csharp/blob/master/License.txt</licenseUrl>
+        <projectUrl>https://github.com/zoetrope/fluent-logger-csharp</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A structured logger for Fluentd (C#)</description>
+        <language>ja-JP</language>
+        <dependencies>
+            <dependency id="MsgPack.Cli" version="0.3" />
+        </dependencies>
+    </metadata>
+    <files />
+</package>
