@@ -1,6 +1,7 @@
 ﻿using Common.Logging.Simple;
 using Fluent;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -11,10 +12,10 @@ namespace Common.Logging.Fluent
 {
     internal class FluentLogger : AbstractSimpleLogger
     {
-        private FluentSender _sender;
+        private BlockingCollection<Tuple<string, object>> _sender;
         private string _typeName;
 
-        internal FluentLogger(FluentSender sender, string typeName, LogLevel logLevel, bool showLevel, bool showDateTime, bool showLogName, string dateTimeFormat)
+        internal FluentLogger(BlockingCollection<Tuple<string, object>> sender, string typeName, LogLevel logLevel, bool showLevel, bool showDateTime, bool showLogName, string dateTimeFormat)
             : base(typeName, logLevel, showLevel, showDateTime, showLogName, dateTimeFormat)
         {
             _sender = sender;
@@ -23,8 +24,8 @@ namespace Common.Logging.Fluent
 
         protected override void WriteInternal(LogLevel targetLevel, object message, Exception e)
         {
-            dynamic record = CreateLogRecord(targetLevel, message, e);
-            _sender.EmitAsync(_typeName, record).Wait();
+            object record = CreateLogRecord(targetLevel, message, e);
+            _sender.TryAdd(Tuple.Create(_typeName, record));
         }
 
 
@@ -32,7 +33,6 @@ namespace Common.Logging.Fluent
         {
             dynamic record = new ExpandoObject();
             
-
             if (ShowLevel)
             {
                 record.Level = targetLevel.ToString().ToUpper();

@@ -55,7 +55,6 @@ namespace Fluent
         }
         private MessagePackObject CreateTypedMessagePackObject(Type type, object obj)
         {
-            Console.WriteLine(_nestCount);
             if (_nestCount > MaxNestCount)
             {
                 throw new InvalidOperationException("nest counter is over the maximum. counter = " + _nestCount);
