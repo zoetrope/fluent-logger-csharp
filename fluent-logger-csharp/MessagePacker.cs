@@ -45,8 +45,7 @@ namespace Fluent
             {
                 var child = new List<MessagePackObject>();
                 child.Add(timestamp.ToUniversalTime().Subtract(_epoc).TotalSeconds);
-                _nestCount = 0;
-                child.Add(CreateTypedMessagePackObject(record.GetType(), record));
+                child.Add(CreateTypedMessagePackObject(record.GetType(), record, first:true));
                 children.Add(new MessagePackObject(child));
             }
             xs.Add(new MessagePackObject(children));
@@ -59,20 +58,20 @@ namespace Fluent
             return ms.ToArray();
         }
 
-        private MessagePackObject list(List<MessagePackObject> objs)
+        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj, bool first=false)
         {
-            return new MessagePackObject(new List<MessagePackObject>(objs));
-        }
+            if (first)
+            {
+                _nestCount = 0;
+            }
 
-
-        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj)
-        {
             if (_nestCount > MaxNestCount)
             {
                 throw new InvalidOperationException("nest counter is over the maximum. counter = " + _nestCount);
             }
 
             _nestCount++;
+
             using (var d = new DisposeWithAction(() => _nestCount--))
             {
                 if (obj == null)
