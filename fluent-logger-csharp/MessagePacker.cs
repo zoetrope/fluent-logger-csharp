@@ -40,19 +40,31 @@ namespace Fluent
 
             var xs = new List<MessagePackObject>();
             xs.Add(tag);
+            var children = new List<MessagePackObject>();
             foreach (var record in records)
             {
-                xs.Add(timestamp.ToUniversalTime().Subtract(_epoc).TotalSeconds);
+                var child = new List<MessagePackObject>();
+                child.Add(timestamp.ToUniversalTime().Subtract(_epoc).TotalSeconds);
                 _nestCount = 0;
-                xs.Add(CreateTypedMessagePackObject(record.GetType(), record));
+                child.Add(CreateTypedMessagePackObject(record.GetType(), record));
+                children.Add(new MessagePackObject(child));
             }
-            var x = new MessagePackObject(xs);
+            xs.Add(new MessagePackObject(children));
 
+            var x = new MessagePackObject(xs);
+            
             var ms = new MemoryStream();
             var packer = Packer.Create(ms);
             packer.Pack(x);
             return ms.ToArray();
         }
+
+        private MessagePackObject list(List<MessagePackObject> objs)
+        {
+            return new MessagePackObject(new List<MessagePackObject>(objs));
+        }
+
+
         private MessagePackObject CreateTypedMessagePackObject(Type type, object obj)
         {
             if (_nestCount > MaxNestCount)
