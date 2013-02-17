@@ -1,19 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>Common.Logging.Fluent</id>
-        <version>0.1.0</version>
+        <version>0.1.0-beta</version>
         <title />
         <authors>zoetrope</authors>
         <owners />
         <licenseUrl>https://github.com/zoetrope/fluent-logger-csharp/blob/master/License.txt</licenseUrl>
         <projectUrl>https://github.com/zoetrope/fluent-logger-csharp</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>My package description.</description>
+        <description>Common.Logging library bindings for fluent-logger-csharp</description>
         <dependencies>
             <dependency id="Common.Logging" version="2.1.2" />
-            <dependency id="ImplicitQueryString" version="1.0.0.0" />
+            <dependency id="fluent-logger-csharp" version="0.1.0-beta" />
         </dependencies>
     </metadata>
-    <files />
+    <files>
+        <file src="..\Common.Logging.Fluent\bin\Release\Common.Logging.Fluent.dll" target="lib\net45\Common.Logging.Fluent.dll" />
+    </files>
 </package>
