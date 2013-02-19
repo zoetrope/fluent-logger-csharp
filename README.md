@@ -1,5 +1,9 @@
-
 # fluent-logger-csharp / Common.Logging.Fluent
+
+fluent-logger-csharp is a structured logger for Fluentd (C#).
+
+Common.Logging.Fluent is a Common.Logging library bindings for fluent-logger-csharp.
+
 
 ## Requirements
 
@@ -14,7 +18,7 @@
 
 
 
-## Installation
+## Installation (in the NuGet Package Manager Console)
 
 fluent-logger-csharp
 
@@ -37,7 +41,8 @@ usage
 
     using (var sender = FluentSender.CreateSync("app").Result)
     {
-        sender.EmitAsync("hoge", new { message = "hoge" }).Wait();
+        sender.EmitAsync("hoge", new { message = "test" }).Wait();
+        //Output: [ app.hoge, 2013-02-19T23:01:00+09:00, { "message" : "test" } ]
     }
 
 ### Common.Logging.Fluent
@@ -50,16 +55,32 @@ using
 usage
 
     var properties = new NameValueCollection();
+    properties["tag"] = "app";
+    properties["hostname"] = "localhost";
+    properties["port"] = "24224";
     LogManager.Adapter = new FluentLoggerFactoryAdapter(properties);
 
     var logger = LogManager.GetCurrentClassLogger();
-    logger.Debug("test");
+    
+    logger.Debug("test"); //Output: [ app.TypeName, 2013-02-19T23:01:00+09:00, { "Level" : "DEBUG", "Message" : "test" } ]
 
+### Supported types
+
+* Primitive type, string, DateTime
+* class (public property only)
+* struct
+* Dictionary<string, object>
+* ExpandoObject (public property only)
+* Anonymous type
+* List<>, array
+
+* does not support cyclic reference
+* does not support null reference
 
 
 ## Configuration
 
-Fluentd daemon must be lauched with the following configuration:
+### Configuration for Fluentd daemon
 
     <source>
       type forward
@@ -71,7 +92,7 @@ Fluentd daemon must be lauched with the following configuration:
     </match>
 
 
-app.config
+### app.config/web.config for Common.Logging.Fluent
 
     <?xml version="1.0" encoding="utf-8"?>
     <configuration>
@@ -84,9 +105,13 @@ app.config
         <logging>
           <factoryAdapter type="Common.Logging.Fluent.FluentLoggerFactoryAdapter, Common.Logging.Fluent">
             <arg key="level" value="DEBUG" />
-            <arg key="showLogName" value="true" />
-            <arg key="showDataTime" value="true" />
-            <arg key="dateTimeFormat" value="yyyy/MM/dd HH:mm:ss:fff" />
+            <arg key="tag" value="app" />
+            <arg key="hostname" value="localhost" />
+            <arg key="port" value="24224" />
+            <arg key="bufmax" value="1048576" />
+            <arg key="timeout" value="3000" />
+            <arg key="verbose" value="false" />
+            <arg key="showLevel" value="true" />
           </factoryAdapter>
         </logging>
       </common>
