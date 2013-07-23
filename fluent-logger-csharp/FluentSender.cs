@@ -7,7 +7,6 @@ namespace Fluent
 {
     public class FluentSender : IDisposable
     {
-        private string _tag;
         private string _host;
         private int _port;
         private int _bufmax;
@@ -17,29 +16,40 @@ namespace Fluent
         private byte[] _pendings;
         private TcpClient _client;
         private MessagePacker _packer;
+				private Timer _retrytimer;
+				private int _autoretryinterval;
 
-        public static async Task<FluentSender> CreateSync(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false)
+        public FluentSender(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false, int autoretryinterval = 10000)
         {
-            var sender = new FluentSender();
+						_client = null;
+						_pendings = null;
 
-            await sender.InitializeAsync(tag, host, port, bufmax, timeout, verbose);
-
-            return sender;
-        }
-        private FluentSender()
-        {
-        }
-
-
-        private async Task InitializeAsync(string tag, string host, int port, int bufmax, int timeout, bool verbose)
-        {
             _host = host;
             _port = port;
             _bufmax = bufmax;
             _timeout = timeout;
             _verbose = verbose;
-            _packer = new MessagePacker(tag);
+						_autoretryinterval = autoretryinterval;
 
+            _packer = new MessagePacker(tag);
+        }
+
+        public static async Task<FluentSender> CreateSync(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false, int autoretryinterval = 10000)
+        {
+            var sender = new FluentSender(tag, host, port, bufmax, timeout, verbose);
+
+            await sender.InitializeAsync();
+
+            return sender;
+        }
+
+				private async void RetryTimerTick(object sender)
+				{
+					await SendAsync(new byte[0]);
+				}
+
+        private async Task InitializeAsync()
+        {
             try
             {
                 await ReconnectAsync();
@@ -115,6 +125,10 @@ namespace Fluent
                 bytes = mergedArray;
             }
 
+						if (bytes.Length == 0) {
+							return;
+						}
+
             try
             {
                 await ReconnectAsync();
@@ -133,6 +147,14 @@ namespace Fluent
                 else
                 {
                     _pendings = bytes;
+
+										if (_autoretryinterval > 0) {
+											if (_retrytimer == null) {
+												_retrytimer = new Timer(RetryTimerTick);
+											}
+
+											_retrytimer.Change(_autoretryinterval, 0);
+										}
                 }
             }
         }
