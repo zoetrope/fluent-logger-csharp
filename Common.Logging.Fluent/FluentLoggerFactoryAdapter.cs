@@ -40,7 +40,7 @@ namespace Common.Logging.Fluent
             int timeout = properties.ParseValueOrDefault("timeout", 3000);
             bool verbose = properties.ParseValueOrDefault("verbose", false);
 
-            _sender = FluentSender.CreateSync(tag, hostname, port, bufmax, timeout, verbose).Result;
+            _sender = new FluentSender(tag, hostname, port, bufmax, timeout, verbose);
 
             _queue = new BlockingCollection<Tuple<string, object>>(new ConcurrentQueue<Tuple<string, object>>());
             _cancellation = new CancellationTokenSource();

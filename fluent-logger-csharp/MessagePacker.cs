@@ -28,15 +28,20 @@ namespace Fluent
 
         public byte[] MakePacket(string label, DateTime timestamp, params object[] records)
         {
-            string tag;
-            if (!string.IsNullOrEmpty(label))
-            {
-                tag = _tag + "." + label;
-            }
-            else
-            {
-                tag = _tag;
-            }
+            string tag = "";
+
+						if (! string.IsNullOrEmpty(_tag) && ! string.IsNullOrEmpty(label))
+						{
+							tag = string.Format("{0}.{1}", _tag, label);
+						}
+						else if (! string.IsNullOrEmpty(_tag))
+						{
+							tag = _tag;
+						}
+						else if (! string.IsNullOrEmpty(label))
+						{
+							tag = label;
+						}
 
             var xs = new List<MessagePackObject>();
             xs.Add(tag);
