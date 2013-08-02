@@ -30,18 +30,18 @@ namespace Fluent
         {
             string tag = "";
 
-						if (! string.IsNullOrEmpty(_tag) && ! string.IsNullOrEmpty(label))
-						{
-							tag = string.Format("{0}.{1}", _tag, label);
-						}
-						else if (! string.IsNullOrEmpty(_tag))
-						{
-							tag = _tag;
-						}
-						else if (! string.IsNullOrEmpty(label))
-						{
-							tag = label;
-						}
+            if (!string.IsNullOrEmpty(_tag) && !string.IsNullOrEmpty(label))
+            {
+                tag = string.Format("{0}.{1}", _tag, label);
+            }
+            else if (!string.IsNullOrEmpty(_tag))
+            {
+                tag = _tag;
+            }
+            else if (!string.IsNullOrEmpty(label))
+            {
+                tag = label;
+            }
 
             var xs = new List<MessagePackObject>();
             xs.Add(tag);
@@ -50,20 +50,20 @@ namespace Fluent
             {
                 var child = new List<MessagePackObject>();
                 child.Add(timestamp.ToUniversalTime().Subtract(_epoc).TotalSeconds);
-                child.Add(CreateTypedMessagePackObject(record.GetType(), record, first:true));
+                child.Add(CreateTypedMessagePackObject(record.GetType(), record, first: true));
                 children.Add(new MessagePackObject(child));
             }
             xs.Add(new MessagePackObject(children));
 
             var x = new MessagePackObject(xs);
-            
+
             var ms = new MemoryStream();
             var packer = Packer.Create(ms);
             packer.Pack(x);
             return ms.ToArray();
         }
 
-        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj, bool first=false)
+        private MessagePackObject CreateTypedMessagePackObject(Type type, object obj, bool first = false)
         {
             if (first)
             {

@@ -16,20 +16,20 @@ namespace Fluent
         private byte[] _pendings;
         private TcpClient _client;
         private MessagePacker _packer;
-				private Timer _retrytimer;
-				private int _autoretryinterval;
+        private Timer _retrytimer;
+        private int _autoretryinterval;
 
         public FluentSender(string tag, string host = "localhost", int port = 24224, int bufmax = 1024*1024, int timeout = 3000, bool verbose = false, int autoretryinterval = 10000)
         {
-						_client = null;
-						_pendings = null;
+            _client = null;
+            _pendings = null;
 
             _host = host;
             _port = port;
             _bufmax = bufmax;
             _timeout = timeout;
             _verbose = verbose;
-						_autoretryinterval = autoretryinterval;
+            _autoretryinterval = autoretryinterval;
 
             _packer = new MessagePacker(tag);
         }
@@ -43,10 +43,10 @@ namespace Fluent
             return sender;
         }
 
-				private async void RetryTimerTick(object sender)
-				{
-					await SendAsync(new byte[0]);
-				}
+        private async void RetryTimerTick(object sender)
+        {
+            await SendAsync(new byte[0]);
+        }
 
         private async Task InitializeAsync()
         {
@@ -125,9 +125,10 @@ namespace Fluent
                 bytes = mergedArray;
             }
 
-						if (bytes.Length == 0) {
-							return;
-						}
+            if (bytes.Length == 0)
+            {
+                return;
+            }
 
             try
             {
@@ -148,13 +149,15 @@ namespace Fluent
                 {
                     _pendings = bytes;
 
-										if (_autoretryinterval > 0) {
-											if (_retrytimer == null) {
-												_retrytimer = new Timer(RetryTimerTick);
-											}
+                    if (_autoretryinterval > 0)
+                    {
+                        if (_retrytimer == null)
+                        {
+                            _retrytimer = new Timer(RetryTimerTick);
+                        }
 
-											_retrytimer.Change(_autoretryinterval, 0);
-										}
+                        _retrytimer.Change(_autoretryinterval, 0);
+                    }
                 }
             }
         }
