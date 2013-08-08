@@ -73,9 +73,9 @@ usage
 * ExpandoObject (public property only)
 * Anonymous type
 * List<>, array
+* null reference
 
 * does not support cyclic reference
-* does not support null reference
 
 
 ## Configuration

@@ -22,9 +22,7 @@ namespace Fluent.Test
             logger.Debug("test");
             
             var ret = task.Result;
-
-            Utils.Unpack(ret).Is(@"[ ""Fluent.Fluent.Test.FluentLoggerTest"", 1360421509813, { ""Level"" : ""DEBUG"", ""Message"" : ""test"" } ]");
-
+            Utils.Unpack(ret).Is(@"[ ""Fluent.Fluent.Test.FluentLoggerTest"", [ [ 1360421509.813, { ""Level"" : ""DEBUG"", ""Message"" : ""test"" } ] ] ]");
             
         }
     }

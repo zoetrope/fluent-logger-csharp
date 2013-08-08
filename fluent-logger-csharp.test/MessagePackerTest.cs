@@ -23,7 +23,7 @@ namespace Fluent.Test
         {
             var date = MessagePackConvert.ToDateTime(1360370224238);
             var pack = _packer.MakePacket("test1", date, new { Message = "hoge", Value = 1234 });
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ] ] ]");
         }
         [TestMethod]
         public void PackSimpleDictionary()
@@ -31,7 +31,7 @@ namespace Fluent.Test
             var date = MessagePackConvert.ToDateTime(1360370224238);
             var msg = new Dictionary<string, object>() { { "Message", "hoge" }, { "Value", 1234 } };
             var pack = _packer.MakePacket("test1", date, msg);
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ] ] ]");
         }
         [TestMethod]
         public void PackSimpleDynamicObject()
@@ -41,7 +41,7 @@ namespace Fluent.Test
             msg.Message = "hoge";
             msg.Value = 1234;
             var pack = _packer.MakePacket("test1", date, msg);
-            ((string)Utils.Unpack(pack)).Is(@"[ ""test.test1"", 1360370224238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ]");
+            ((string)Utils.Unpack(pack)).Is(@"[ ""test.test1"", [ [ 1360370224.238, { ""Message"" : ""hoge"", ""Value"" : 1234 } ] ] ]");
         }
 
         [TestMethod]
@@ -49,14 +49,14 @@ namespace Fluent.Test
         {
             var date = MessagePackConvert.ToDateTime(1360370224238);
             var pack = _packer.MakePacket("test1", date, new[] { "hoge", "1234" });
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, [ ""hoge"", ""1234"" ] ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, ""hoge"" ], [ 1360370224.238, ""1234"" ] ] ]");
         }
         [TestMethod]
         public void PackList()
         {
             var date = MessagePackConvert.ToDateTime(1360370224238);
             var pack = _packer.MakePacket("test1", date, new List<string> { "hoge", "1234" });
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, [ ""hoge"", ""1234"" ] ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, [ ""hoge"", ""1234"" ] ] ] ]");
         }
 
 
@@ -67,7 +67,7 @@ namespace Fluent.Test
             var date = MessagePackConvert.ToDateTime(1360370224238);
             var s = new StructData { Name = "Struct", Value = 112233445566778899};
             var pack = _packer.MakePacket("test1", date, s);
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, { ""Name"" : ""Struct"", ""Value"" : 112233445566778899 } ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, { ""Name"" : ""Struct"", ""Value"" : 112233445566778899 } ] ] ]");
         }
 
         public struct StructData
@@ -92,7 +92,7 @@ namespace Fluent.Test
                 Child5 = new Child { Name = "Child5", Value = 5 }
             };
             var pack = _packer.MakePacket("test1", date, parent);
-            Utils.Unpack(pack).Is(@"[ ""test.test1"", 1360370224238, { ""Name"" : ""Parent"", ""Child1"" : { ""Name"" : ""Child1"", ""Value"" : 1 }, ""Child2"" : { ""Name"" : ""Child2"", ""Value"" : 2 }, ""Child3"" : { ""Name"" : ""Child3"", ""Value"" : 3 }, ""Child4"" : { ""Name"" : ""Child4"", ""Value"" : 4 }, ""Child5"" : { ""Name"" : ""Child5"", ""Value"" : 5 } } ]");
+            Utils.Unpack(pack).Is(@"[ ""test.test1"", [ [ 1360370224.238, { ""Name"" : ""Parent"", ""Child1"" : { ""Name"" : ""Child1"", ""Value"" : 1 }, ""Child2"" : { ""Name"" : ""Child2"", ""Value"" : 2 }, ""Child3"" : { ""Name"" : ""Child3"", ""Value"" : 3 }, ""Child4"" : { ""Name"" : ""Child4"", ""Value"" : 4 }, ""Child5"" : { ""Name"" : ""Child5"", ""Value"" : 5 } } ] ] ]");
         }
 
         public class Parent

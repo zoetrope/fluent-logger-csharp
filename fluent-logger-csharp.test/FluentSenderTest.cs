@@ -25,7 +25,7 @@ namespace Fluent.Test
             }
             var ret = task.Result;
 
-            Utils.Unpack(ret).Is(@"[ ""app.hoge"", 1360370224238, { ""message"" : ""hoge"" } ]");
+            Utils.Unpack(ret).Is(@"[ ""app.hoge"", [ [ 1360370224.238, { ""message"" : ""hoge"" } ] ] ]");
         }
 
     }
